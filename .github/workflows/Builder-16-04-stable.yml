@@ -1,0 +1,91 @@
+name: CI
+
+on:
+
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+env:
+  DEV_TARBALL_VARIANT: _usrmerge
+  ROOTFS_URL: "https://ci.ubports.com/job/focal-hybris-rootfs-arm64/job/master/lastSuccessfulBuild/artifact/ubuntu-touch-android9plus-rootfs-arm64.tar.gz"
+  OTA_CHANNEL: "16.04/arm64/android9plus/stable"
+  
+jobs:
+  BuildKernel:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3        
+      - name: build kernel
+        run: | 
+          sudo apt update
+          sudo apt install android-tools-mkbootimg bc bison build-essential ca-certificates cpio curl flex git kmod libssl-dev libtinfo5 python2 sudo unzip wget xz-utils -y --no-install-recommends
+          sudo ln -sf python2.7 /usr/bin/python
+          sudo wget https://raw.githubusercontent.com/LineageOS/android_system_core/lineage-17.1/mkbootimg/mkbootimg.py -O /usr/bin/mkbootimg
+          sudo chmod +x /usr/bin/mkbootimg
+          git clone https://gitlab.com/ubports/community-ports/halium-generic-adaptation-build-tools -b halium-10-focal build
+          sudo -s ./build/build.sh
+         
+      - name: bootimg
+        uses: actions/upload-artifact@master
+        with:
+          name: bootimg
+          path: out/*
+          
+  BuildSystem:
+      runs-on: ubuntu-20.04   
+      steps:
+        - uses: actions/checkout@v3
+        - name: make systemimg
+          run: |
+              sudo apt update
+              sudo apt install git img2simg jq sudo wget xz-utils android-tools-mkbootimg bc bison build-essential ca-certificates cpio curl flex git kmod libssl-dev libtinfo5 python2 sudo unzip wget xz-utils -y --no-install-recommends
+              sudo ln -sf python2.7 /usr/bin/python
+              sudo wget https://raw.githubusercontent.com/LineageOS/android_system_core/lineage-17.1/mkbootimg/mkbootimg.py -O /usr/bin/mkbootimg
+              sudo chmod +x /usr/bin/mkbootimg
+              sudo -s git clone https://gitlab.com/ubports/community-ports/halium-generic-adaptation-build-tools -b halium-10-focal build
+              sudo -s ./build/build.sh
+              DEVICE="$(source deviceinfo && echo $deviceinfo_codename)"
+              sudo -s ./build/fetch-and-prepare-latest-ota.sh "$OTA_CHANNEL" "$DEVICE" ota
+              mkdir -p out
+              sudo -s ./build/system-image-from-ota.sh ota/ubuntu_command out
+    
+        - name: upload systemimg
+          uses: actions/upload-artifact@master
+          with:
+              name: ubuntuimg
+              path: |
+               out/*
+              
+  BuildSystemDevel:
+      runs-on: ubuntu-20.04 
+      steps:
+        - uses: actions/checkout@v3
+        - name: make systemimg
+          run: |
+              sudo apt update
+              sudo apt install git img2simg jq sudo wget xz-utils android-tools-mkbootimg bc bison build-essential ca-certificates cpio curl flex git kmod libssl-dev libtinfo5 python2 sudo unzip wget xz-utils -y --no-install-recommends
+              sudo ln -sf python2.7 /usr/bin/python
+              sudo wget https://raw.githubusercontent.com/LineageOS/android_system_core/lineage-17.1/mkbootimg/mkbootimg.py -O /usr/bin/mkbootimg
+              sudo chmod +x /usr/bin/mkbootimg
+              sudo -s git clone https://gitlab.com/ubports/community-ports/halium-generic-adaptation-build-tools -b halium-10-focal build
+              sudo -s ./build/build.sh
+              DEVICE="$(source deviceinfo && echo $deviceinfo_codename)"
+              sudo -s ./build/fetch-and-prepare-latest-ota.sh "$OTA_CHANNEL" "$DEVICE" ota
+              mkdir -p out
+              sudo -s ./build/system-image-from-ota.sh ota/ubuntu_command out
+              sudo -s ./build/prepare-fake-ota.sh out/device_${DEVICE}$DEV_TARBALL_VARIANT.tar.xz ota
+              mkdir -p out
+              sudo -s ./build/system-image-from-ota.sh ota/ubuntu_command out
+    
+        - name: upload deveimg
+          uses: actions/upload-artifact@master
+          with:
+              name: ubuntuimgdevel
+              path: |
+               out/boot.img
+               out/dtbo.img
+               out/system.img
