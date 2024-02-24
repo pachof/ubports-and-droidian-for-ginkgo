@@ -46,7 +46,7 @@ jobs:
               sudo ln -sf python2.7 /usr/bin/python
               sudo wget https://raw.githubusercontent.com/LineageOS/android_system_core/lineage-17.1/mkbootimg/mkbootimg.py -O /usr/bin/mkbootimg
               sudo chmod +x /usr/bin/mkbootimg
-              sudo -s git clone https://gitlab.com/ubports/community-ports/halium-generic-adaptation-build-tools build
+              sudo -s git clone https://gitlab.com/ubports/community-ports/halium-generic-adaptation-build-tools de-b halium-10 build
               sudo -s ./build/build.sh
               DEVICE="$(source deviceinfo && echo $deviceinfo_codename)"
               sudo -s ./build/fetch-and-prepare-latest-ota.sh "$OTA_CHANNEL" "$DEVICE" ota
@@ -71,7 +71,7 @@ jobs:
               sudo ln -sf python2.7 /usr/bin/python
               sudo wget https://raw.githubusercontent.com/LineageOS/android_system_core/lineage-17.1/mkbootimg/mkbootimg.py -O /usr/bin/mkbootimg
               sudo chmod +x /usr/bin/mkbootimg
-              sudo -s git clone https://gitlab.com/ubports/community-ports/halium-generic-adaptation-build-tools build
+              sudo -s git clone https://gitlab.com/ubports/community-ports/halium-generic-adaptation-build-tools -b halium-10 build
               sudo -s ./build/build.sh
               DEVICE="$(source deviceinfo && echo $deviceinfo_codename)"
               sudo -s ./build/fetch-and-prepare-latest-ota.sh "$OTA_CHANNEL" "$DEVICE" ota
