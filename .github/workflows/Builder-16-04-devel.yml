@@ -26,7 +26,7 @@ jobs:
           sudo ln -sf python2.7 /usr/bin/python
           sudo wget https://raw.githubusercontent.com/LineageOS/android_system_core/lineage-17.1/mkbootimg/mkbootimg.py -O /usr/bin/mkbootimg
           sudo chmod +x /usr/bin/mkbootimg
-          git clone https://gitlab.com/ubports/community-ports/halium-generic-adaptation-build-tools build
+          git clone https://gitlab.com/ubports/community-ports/halium-generic-adaptation-build-tools -b halium-10 build
           sudo -s ./build/build.sh
          
       - name: bootimg
