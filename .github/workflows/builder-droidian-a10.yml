@@ -1,5 +1,4 @@
 name: CI-Boot-Droidian-A10
-
 on:
 
   push:
